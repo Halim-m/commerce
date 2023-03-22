@@ -31,12 +31,12 @@ public class CustomerService {
                 .collect(Collectors.toList());
     }
 
-    public CustomerDto getCustomerById(Long id) {
-        return customerDtoConverter.convert(customerRepository.findById(id)
-                .orElseThrow(
-                        () -> new CustomerNotFoundException("Customer could not be found by id " , id)
-                )
-        );
+    public CustomerDto getCustomer(Long id) {
+        return customerDtoConverter.convert(getCustomerById(id));
+    }
+
+    public CustomerDto getCustomer(String mail){
+        return customerDtoConverter.convert(getCustomerByMail(mail));
     }
 
     public CustomerDto createCustomer(CreateCustomerRequest createCustomerRequest) {
@@ -47,44 +47,60 @@ public class CustomerService {
                 createCustomerRequest.getAddress()
         );
         customerRepository.save(customer);
-        System.out.println(customer);//TODO
         return customerDtoConverter.convert(customer);
     }
 
     public CustomerDto updateCustomer(UpdateCustomerRequest updateCustomerRequest) {
-        Long id = updateCustomerRequest.getId();
-        Customer customer = customerRepository.findById(id).orElseThrow(
-                () -> new CustomerNotFoundException("Customer could not be found by id " , id)
-        );
-        customer.setMail(updateCustomerRequest.getMail());
-        customer.setFirstName(updateCustomerRequest.getFirstName());
-        customer.setLastName(updateCustomerRequest.getLastName());
-        customer.setAddress(updateCustomerRequest.getAddress());
-        customer.setActive(true);
-        System.out.println(customer); //TODO
-        return customerDtoConverter.convert(customer);
+        Customer updatedCustomer = new Customer(
+                updateCustomerRequest.getId(),
+                updateCustomerRequest.getMail(),
+                updateCustomerRequest.getFirstName(),
+                updateCustomerRequest.getLastName(),
+                updateCustomerRequest.getAddress(),
+                true);
+        customerRepository.save(updatedCustomer);
+        return customerDtoConverter.convert(updatedCustomer);
     }
 
-    public CustomerDto changeActivityCustomer(Long id){
-        Customer customer = customerRepository.findById(id).orElseThrow(
-                () -> new CustomerNotFoundException("Customer could not be found by id ", id)
-        );
-
+    public void changeActivityCustomer(Long id){
+        Customer customer = getCustomerById(id);
         if (customer.isActive()) {
-            System.out.println("Customer is deactivated");
-            customer.setActive(false);
+            setActive(customer,false);
         } else {
-            System.out.println("Customer is activated");
-            customer.setActive(true);
+            setActive(customer,true);
         }
-        return customerDtoConverter.convert(customer);
     }
 
     public void deleteCustomer(Long id) {
-        customerRepository.findById(id)
-                .orElseThrow(
-                        ()-> new CustomerNotFoundException(id)
-                );
-        customerRepository.deleteById(id);
+        if (customerRepository.existsById(id)){
+            customerRepository.deleteById(id);
+        }
+        else{throw new CustomerNotFoundException(id);}
+
+    }
+
+    protected Customer getCustomerById(Long id){
+        return customerRepository.findById(id).orElseThrow(
+                () -> new CustomerNotFoundException(id)
+        );
+    }
+
+    protected Customer getCustomerByMail(String mail){
+        return customerRepository.findByMail(mail).orElseThrow(
+                () -> new CustomerNotFoundException("Customer could not be found by mail" + mail)
+        );
+    }
+
+    protected Customer setActive(Customer customer, Boolean status){
+        Customer updatedCustomer = new Customer(
+                customer.getId(),
+                customer.getMail(),
+                customer.getFirstName(),
+                customer.getLastName(),
+                customer.getAddress(),
+                status
+        );
+        customerRepository.save(updatedCustomer);
+        return updatedCustomer;
     }
 }

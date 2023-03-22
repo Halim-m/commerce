@@ -8,10 +8,10 @@ data class Customer(
     @field:GeneratedValue(strategy = GenerationType.AUTO)
     val id: Long?,
     @Column(unique = true)
-    var mail: String,
-    var firstName: String,
-    var lastName:String,
-    var address: String,
+    val mail: String,
+    val firstName: String,
+    val lastName:String,
+    val address: String,
     var isActive: Boolean
 ) {
     constructor(mail: String, firstName: String, lastName: String, address: String) : this(null,mail,firstName, lastName, address, true)

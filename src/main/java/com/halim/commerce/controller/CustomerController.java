@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/v1/customer", headers = "Accept=application/json")
+@RequestMapping(value = "/v1/customer")
 public class CustomerController {
     private final CustomerService customerService;
 
@@ -27,7 +27,12 @@ public class CustomerController {
     }
     @GetMapping()
     public ResponseEntity<CustomerDto> getCustomerById(@RequestParam("id") Long id){
-        CustomerDto customer = customerService.getCustomerById(id);
+        CustomerDto customer = customerService.getCustomer(id);
+        return new ResponseEntity<>(customer, HttpStatus.FOUND);
+    }
+    @GetMapping("/mail")
+    public ResponseEntity<CustomerDto> getCustomerByMail(@RequestParam("mail") String mail){
+        CustomerDto customer = customerService.getCustomer(mail);
         return new ResponseEntity<>(customer, HttpStatus.FOUND);
     }
 
@@ -44,8 +49,8 @@ public class CustomerController {
     }
 
     @PatchMapping("/activity/{id}")
-    public ResponseEntity<CustomerDto> deactivateCustomer(@PathVariable("id") Long id){
-        return ResponseEntity.ok(customerService.changeActivityCustomer(id));
+    public ResponseEntity<Void> deactivateCustomer(@PathVariable("id") Long id){
+        return ResponseEntity.accepted().build();
     }
 
     @DeleteMapping("/{id}")
