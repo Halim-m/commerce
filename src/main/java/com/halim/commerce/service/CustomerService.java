@@ -25,10 +25,7 @@ public class CustomerService {
 
 
     public List<CustomerDto> getAllCustomer() {
-        return customerRepository.findAll()
-                .stream()
-                .map(customerDtoConverter::convert)
-                .collect(Collectors.toList());
+        return customerDtoConverter.convert(customerRepository.findAll());
     }
 
     public CustomerDto getCustomer(Long id) {

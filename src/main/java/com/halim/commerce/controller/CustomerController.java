@@ -49,7 +49,7 @@ public class CustomerController {
     }
 
     @PatchMapping("/activity/{id}")
-    public ResponseEntity<Void> deactivateCustomer(@PathVariable("id") Long id){
+    public ResponseEntity<Void> changeActivityCustomer(@PathVariable("id") Long id){
         return ResponseEntity.accepted().build();
     }
 
