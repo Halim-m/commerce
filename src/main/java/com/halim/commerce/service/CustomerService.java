@@ -10,7 +10,6 @@ import com.halim.commerce.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CustomerService {
@@ -48,24 +47,25 @@ public class CustomerService {
     }
 
     public CustomerDto updateCustomer(UpdateCustomerRequest updateCustomerRequest) {
-        Customer updatedCustomer = new Customer(
-                updateCustomerRequest.getId(),
-                updateCustomerRequest.getMail(),
-                updateCustomerRequest.getFirstName(),
-                updateCustomerRequest.getLastName(),
-                updateCustomerRequest.getAddress(),
-                true);
-        customerRepository.save(updatedCustomer);
-        return customerDtoConverter.convert(updatedCustomer);
+        if(customerRepository.existsById(updateCustomerRequest.getId())){
+            Customer updatedCustomer = new Customer(
+                    updateCustomerRequest.getId(),
+                    updateCustomerRequest.getMail(),
+                    updateCustomerRequest.getFirstName(),
+                    updateCustomerRequest.getLastName(),
+                    updateCustomerRequest.getAddress(),
+                    true);
+            customerRepository.save(updatedCustomer);
+            return customerDtoConverter.convert(updatedCustomer);
+        }
+        else{
+            throw new CustomerNotFoundException(updateCustomerRequest.getId());
+        }
     }
 
     public void changeActivityCustomer(Long id){
         Customer customer = getCustomerById(id);
-        if (customer.isActive()) {
-            setActive(customer,false);
-        } else {
-            setActive(customer,true);
-        }
+        setActive(customer, !customer.isActive());
     }
 
     public void deleteCustomer(Long id) {
@@ -73,7 +73,6 @@ public class CustomerService {
             customerRepository.deleteById(id);
         }
         else{throw new CustomerNotFoundException(id);}
-
     }
 
     protected Customer getCustomerById(Long id){
@@ -88,7 +87,7 @@ public class CustomerService {
         );
     }
 
-    protected Customer setActive(Customer customer, Boolean status){
+    protected void setActive(Customer customer, Boolean status){
         Customer updatedCustomer = new Customer(
                 customer.getId(),
                 customer.getMail(),
@@ -98,6 +97,5 @@ public class CustomerService {
                 status
         );
         customerRepository.save(updatedCustomer);
-        return updatedCustomer;
     }
 }

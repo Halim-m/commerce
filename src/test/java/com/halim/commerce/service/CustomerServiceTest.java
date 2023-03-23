@@ -4,11 +4,13 @@ import com.halim.commerce.TestUtil;
 import com.halim.commerce.dto.CustomerDto;
 import com.halim.commerce.dto.converter.CustomerDtoConverter;
 import com.halim.commerce.dto.request.CreateCustomerRequest;
+import com.halim.commerce.dto.request.UpdateCustomerRequest;
 import com.halim.commerce.exception.CustomerNotFoundException;
 import com.halim.commerce.model.Customer;
 import com.halim.commerce.repository.CustomerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.List;
 import java.util.Optional;
@@ -139,44 +141,179 @@ class CustomerServiceTest extends TestUtil {
     }
 
     @Test
-    void testUpdateCustomer_whenUserIdExist() {
-        CreateCustomerRequest request = new CreateCustomerRequest(
-                "mail@gmail.com",
-                "firstName",
-                "lastName",
-                "address");
-        Customer customer = new Customer(
-                "mail@gmail.com",
-                "firstName",
-                "lastName",
-                "address");
-        Customer savedCustomer = new Customer(
-                "mail@gmail.com",
-                "firstName",
-                "lastName",
-                "address");
+    void testUpdateCustomer_whenCustomerIdExist_itShouldReturnUpdatedCustomerDto() {
+        Long id = 1L;
+        UpdateCustomerRequest request = new UpdateCustomerRequest(
+                id,
+                "updated@gmail.com",
+                "updatedName",
+                "updatedLastName",
+                "updatedAddress");
+
+        Customer updatedCustomer = new Customer(
+                id,
+                "updated@gmail.com",
+                "updatedName",
+                "updatedLastName",
+                "updatedAddress",
+                true);
+
         CustomerDto customerDto = new CustomerDto(
-                "mail@gmail.com",
-                "firstName",
-                "lastName",
-                "address");
+                "updated@gmail.com",
+                "updatedName",
+                "updatedLastName",
+                "updatedAddress");
 
-        when(repository.save(customer)).thenReturn(savedCustomer);
-        when(converter.convert(savedCustomer)).thenReturn(customerDto);
+        when(repository.existsById(id)).thenReturn(true);
+        when(repository.save(any(Customer.class))).thenReturn(updatedCustomer);
+        when(converter.convert(updatedCustomer)).thenReturn(customerDto);
 
-        CustomerDto result = service.createCustomer(request);
+        CustomerDto result = service.updateCustomer(request);
 
         assertEquals(result, customerDto);
 
-        verify(repository).save(customer);
-        verify(converter).convert(customer);
+        verify(repository).save(any(Customer.class));
+        verify(converter).convert(updatedCustomer);
     }
 
     @Test
-    void changeActivityCustomer() {
+    void testUpdateCustomer_whenCustomerIdNotExist_itShouldThrowCustomerNotFoundException() {
+        Long id = 1L;
+        UpdateCustomerRequest request = new UpdateCustomerRequest(
+                id,
+                "updated@gmail.com",
+                "updatedName",
+                "updatedLastName",
+                "updatedAddress");
+
+        when(repository.existsById(id)).thenReturn(false);
+
+        assertThrows(CustomerNotFoundException.class, () -> service.updateCustomer(request));
+
+        verify(repository).existsById(id);
+        verifyNoInteractions(converter);
     }
 
     @Test
-    void deleteCustomer() {
+    void testChangeActivityCustomer_whenCustomerIdExist() {
+        Long id = 1L;
+        Customer customer = new Customer(
+                id,
+                "test@example.com",
+                "test",
+                "test",
+                "test",
+                false);
+
+        when(repository.findById(id)).thenReturn(Optional.of(customer));
+
+        service.changeActivityCustomer(id);
+
+        ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
+        verify(repository).save(customerCaptor.capture());
+        Customer savedCustomer = customerCaptor.getValue();
+        assertTrue(savedCustomer.isActive());
+    }
+
+    @Test
+    void testChangeActivityCustomer_whenCustomerIdDoesNotExist() {
+        Long id = 1L;
+
+        when(repository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(CustomerNotFoundException.class, () -> service.changeActivityCustomer(id));
+    }
+
+    @Test
+    void testDeleteCustomer_whenCustomerIdExist() {
+        Long id = 1L;
+
+        when(repository.existsById(id)).thenReturn(true);
+
+        service.deleteCustomer(id);
+
+        verify(repository).deleteById(id);
+    }
+
+    @Test
+    void testDeleteCustomer_whenCustomerIdDoesNotExist() {
+        Long id = 1L;
+
+        when(repository.existsById(id)).thenReturn(false);
+
+        assertThrows(CustomerNotFoundException.class, () -> service.deleteCustomer(id));
+    }
+
+    @Test
+    void testGetCustomerById_whenCustomerIdExist() {
+        Long id = 1L;
+        Customer customer = new Customer(
+                id,
+                "test@example.com",
+                "test",
+                "test",
+                "test",
+                false);
+
+        when(repository.findById(id)).thenReturn(Optional.of(customer));
+
+        Customer result = service.getCustomerById(id);
+
+        assertEquals(result, customer);
+    }
+
+    @Test
+    void testGetCustomerById_whenCustomerIdDoesNotExist() {
+        Long id = 1L;
+
+        when(repository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(CustomerNotFoundException.class, () -> service.getCustomerById(id));
+    }
+
+    @Test
+    void testGetCustomerByMail_whenMailExist() {
+        String mail = "test@example.com";
+        Customer customer = new Customer(
+                1L,
+                mail,
+                "test",
+                "test",
+                "test",
+                false);
+
+        when(repository.findByMail(mail)).thenReturn(Optional.of(customer));
+
+        Customer result = service.getCustomerByMail(mail);
+
+        assertEquals(result, customer);
+    }
+
+    @Test
+    void testGetCustomerByMail_whenMailDoesNotExist() {
+        String mail = "test@example.com";
+
+        when(repository.findByMail(mail)).thenReturn(Optional.empty());
+
+        assertThrows(CustomerNotFoundException.class, () -> service.getCustomerByMail(mail));
+    }
+
+    @Test
+    void testSetActive() {
+        Long id = 1L;
+        Customer customer = new Customer(
+                id,
+                "test@example.com",
+                "test",
+                "test",
+                "test",
+                false);
+
+        service.setActive(customer, true);
+
+        ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
+        verify(repository).save(customerCaptor.capture());
+        Customer savedCustomer = customerCaptor.getValue();
+        assertTrue(savedCustomer.isActive());
     }
 }
