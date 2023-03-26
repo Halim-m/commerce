@@ -1,4 +1,5 @@
 package com.halim.commerce.model
+
 import java.time.LocalDateTime
 
 data class BaseEntity(

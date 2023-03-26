@@ -17,7 +17,7 @@ public class CustomerService {
     private final CustomerDtoConverter customerDtoConverter;
 
 
-    public CustomerService(CustomerRepository customerRepository, CustomerDtoConverter customerDtoConverter){
+    public CustomerService(CustomerRepository customerRepository, CustomerDtoConverter customerDtoConverter) {
         this.customerRepository = customerRepository;
         this.customerDtoConverter = customerDtoConverter;
     }
@@ -31,7 +31,7 @@ public class CustomerService {
         return customerDtoConverter.convert(getCustomerById(id));
     }
 
-    public CustomerDto getCustomer(String mail){
+    public CustomerDto getCustomer(String mail) {
         return customerDtoConverter.convert(getCustomerByMail(mail));
     }
 
@@ -47,7 +47,7 @@ public class CustomerService {
     }
 
     public CustomerDto updateCustomer(UpdateCustomerRequest updateCustomerRequest) {
-        if(customerRepository.existsById(updateCustomerRequest.getId())){
+        if (customerRepository.existsById(updateCustomerRequest.getId())) {
             Customer updatedCustomer = new Customer(
                     updateCustomerRequest.getId(),
                     updateCustomerRequest.getMail(),
@@ -57,37 +57,37 @@ public class CustomerService {
                     true);
             customerRepository.save(updatedCustomer);
             return customerDtoConverter.convert(updatedCustomer);
-        }
-        else{
+        } else {
             throw new CustomerNotFoundException(updateCustomerRequest.getId());
         }
     }
 
-    public void changeActivityCustomer(Long id){
+    public void changeActivityCustomer(Long id) {
         Customer customer = getCustomerById(id);
         setActive(customer, !customer.isActive());
     }
 
     public void deleteCustomer(Long id) {
-        if (customerRepository.existsById(id)){
+        if (customerRepository.existsById(id)) {
             customerRepository.deleteById(id);
+        } else {
+            throw new CustomerNotFoundException(id);
         }
-        else{throw new CustomerNotFoundException(id);}
     }
 
-    protected Customer getCustomerById(Long id){
+    protected Customer getCustomerById(Long id) {
         return customerRepository.findById(id).orElseThrow(
                 () -> new CustomerNotFoundException(id)
         );
     }
 
-    protected Customer getCustomerByMail(String mail){
+    protected Customer getCustomerByMail(String mail) {
         return customerRepository.findByMail(mail).orElseThrow(
                 () -> new CustomerNotFoundException("Customer could not be found by mail" + mail)
         );
     }
 
-    protected void setActive(Customer customer, Boolean status){
+    protected void setActive(Customer customer, Boolean status) {
         Customer updatedCustomer = new Customer(
                 customer.getId(),
                 customer.getMail(),

@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class CustomerDtoConverter {
-    public CustomerDto convert(Customer from){
+    public CustomerDto convert(Customer from) {
         return new CustomerDto(
                 from.getMail(),
                 from.getFirstName(),
@@ -17,7 +17,8 @@ public class CustomerDtoConverter {
                 from.getAddress()
         );
     }
-    public List<CustomerDto> convert(List<Customer> list){
+
+    public List<CustomerDto> convert(List<Customer> list) {
 
         return list.stream()
                 .map(this::convert)

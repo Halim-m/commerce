@@ -10,11 +10,18 @@ data class Customer(
     @Column(unique = true)
     val mail: String,
     val firstName: String,
-    val lastName:String,
+    val lastName: String,
     val address: String,
     var isActive: Boolean
 ) {
-    constructor(mail: String, firstName: String, lastName: String, address: String) : this(null,mail,firstName, lastName, address, true)
+    constructor(mail: String, firstName: String, lastName: String, address: String) : this(
+        null,
+        mail,
+        firstName,
+        lastName,
+        address,
+        true
+    )
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

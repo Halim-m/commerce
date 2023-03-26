@@ -23,7 +23,7 @@ public class GeneralExceptionHandler extends ResponseEntityExceptionHandler {
                                                                   @NotNull HttpStatusCode status,
                                                                   @NotNull WebRequest request) {
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach(error ->{
+        ex.getBindingResult().getAllErrors().forEach(error -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
@@ -33,7 +33,7 @@ public class GeneralExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(CustomerNotFoundException.class)
-    public ResponseEntity<?> customerNotFoundExceptionHandler(CustomerNotFoundException exception)  {
+    public ResponseEntity<?> customerNotFoundExceptionHandler(CustomerNotFoundException exception) {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
     }
 
